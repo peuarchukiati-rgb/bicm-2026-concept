@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BICM 2026 — concept redesign</title>
+<style>
+  :root{
+    --ink:#0b0f1a; --ink2:#141a2b; --cream:#f7f3ea; --cream2:#efe8d8;
+    --ember:#ff5a36; --gold:#c9a24b; --teal:#1f5b55; --muted:#8a8f9e;
+    --line:rgba(255,255,255,.12); --lined:rgba(11,15,26,.12);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --thai:"Sukhumvit Set","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--ink);color:var(--cream);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body.th{font-family:var(--thai)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.01em;line-height:1.05}
+  body.th h1,body.th h2,body.th h3{font-family:var(--thai);font-weight:600;letter-spacing:0}
+  a{color:inherit;text-decoration:none}
+  .accent{color:var(--ember)}
+  .em{font-style:italic}
+
+  /* top bar */
+  header{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(11,15,26,.72);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{font-family:var(--serif);font-size:22px;letter-spacing:.02em}
+  .brand b{color:var(--ember);font-weight:400}
+  nav.links{display:none;gap:26px;font-size:14px;letter-spacing:.02em}
+  nav.links a{opacity:.82;transition:opacity .2s}
+  nav.links a:hover{opacity:1}
+  .tools{display:flex;align-items:center;gap:12px}
+  .lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:12px;letter-spacing:.04em}
+  .lang button{background:none;border:0;color:var(--cream);padding:7px 12px;cursor:pointer;opacity:.5;font-family:inherit}
+  .lang button.on{background:var(--ember);color:#fff;opacity:1}
+  .cta{display:inline-block;background:var(--ember);color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;letter-spacing:.03em;white-space:nowrap;transition:transform .15s}
+  .cta:active{transform:scale(.96)}
+  .cta.ghost{background:transparent;border:1px solid var(--line);color:var(--cream)}
+  .burger{display:flex;flex-direction:column;gap:4px;background:none;border:0;cursor:pointer;padding:6px}
+  .burger span{width:22px;height:2px;background:var(--cream);display:block}
+  .mobnav{display:none;flex-direction:column;gap:2px;padding:10px 22px 18px;border-top:1px solid var(--line)}
+  .mobnav.open{display:flex}
+  .mobnav a{padding:11px 0;font-size:16px;border-bottom:1px solid var(--line);opacity:.9}
+
+  /* hero */
+  .hero{position:relative;min-height:100svh;display:flex;align-items:center;padding:96px 0 48px;overflow:hidden}
+  .herovid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:saturate(.92) brightness(.95)}
+  .hero::before{content:"";position:absolute;inset:0;background:
+     radial-gradient(120% 90% at 80% 10%, rgba(255,90,54,.26), transparent 55%),
+     radial-gradient(90% 80% at 8% 100%, rgba(31,91,85,.42), transparent 60%),
+     linear-gradient(180deg, rgba(8,11,18,.62), rgba(9,13,26,.80));z-index:-2}
+  .hero::after{content:"";position:absolute;inset:0;background-image:
+     repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 80px);z-index:-1;opacity:.6}
+  .eyebrow{font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:22px}
+  .hero h1{font-size:clamp(44px,12vw,92px);margin-bottom:24px}
+  .hero h1 .em{color:var(--cream)}
+  .lede{font-size:clamp(16px,4.3vw,19px);max-width:33em;color:#d8d2c4;margin-bottom:30px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px 14px;margin-bottom:34px}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:9px 15px;font-size:13.5px;letter-spacing:.02em}
+  .chip b{color:var(--ember);font-weight:600}
+  .herocta{display:flex;flex-wrap:wrap;gap:12px}
+  .scrollhint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+
+  /* generic section */
+  section.block{padding:72px 0;border-top:1px solid var(--line)}
+  .kicker{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+  .lead{font-family:var(--serif);font-size:clamp(26px,6.4vw,40px);line-height:1.12;max-width:16em}
+  body.th .lead{font-family:var(--thai);font-weight:600}
+  .lead .accent{font-style:italic}
+
+  /* programs */
+  .progs{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:34px}
+  .prog{background:var(--ink);padding:26px 22px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;transition:background .25s}
+  .prog:hover{background:var(--ink2)}
+  .prog .no{font-family:var(--serif);font-size:13px;color:var(--gold);letter-spacing:.1em}
+  .prog h3{font-size:24px;margin:14px 0 8px}
+  .prog p{font-size:14px;color:var(--muted)}
+  .prog .go{margin-top:16px;font-size:13px;color:var(--ember);letter-spacing:.04em}
+
+  /* numbers */
+  .nums-sec{background:var(--cream);color:var(--ink)}
+  .nums-sec .kicker{color:var(--teal)}
+  .nums-sec .intro{font-family:var(--serif);font-size:clamp(22px,5.4vw,32px);max-width:18em;margin-bottom:8px}
+  .nums-sec .sub{font-size:14.5px;color:#5c5648;max-width:30em;margin-bottom:38px}
+  .nums{display:grid;grid-template-columns:1fr 1fr;gap:28px 18px}
+  .num .n{font-family:var(--serif);font-size:clamp(44px,13vw,68px);line-height:1;color:var(--ember)}
+  .num .l{font-size:13px;letter-spacing:.02em;color:#6b6456;margin-top:8px}
+  .numfoot{margin-top:34px;font-size:13.5px;color:#6b6456}
+  .numfoot b{color:var(--ink)}
+
+  /* updates */
+  .ups{display:grid;grid-template-columns:1fr;gap:16px;margin-top:30px}
+  .up{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--ink2);transition:transform .2s,border-color .2s}
+  .up:active{transform:scale(.99)}
+  .up .thumb{height:150px;background:linear-gradient(135deg,#1b2440,#2a1d2e);position:relative;display:flex;align-items:flex-end;padding:14px}
+  .up .thumb span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+  .up .thumb.t1{background:linear-gradient(135deg,#17233f,#20314f)}
+  .up .thumb.t2{background:linear-gradient(135deg,#241f45,#3a2550)}
+  .up .thumb.t3{background:linear-gradient(135deg,#14312b,#1f4a3a)}
+  .up .body{padding:16px 18px 20px}
+  .up .date{font-size:12px;color:var(--gold);letter-spacing:.06em}
+  .up h3{font-size:18px;margin-top:9px;line-height:1.25;font-family:var(--sans);font-weight:600}
+  body.th .up h3{font-family:var(--thai)}
+
+  /* archive teaser */
+  .arch{background:var(--ink2);border-radius:20px;border:1px solid var(--line);padding:30px 24px;margin-top:30px;display:grid;gap:20px}
+  .arch .stat{display:flex;gap:22px;flex-wrap:wrap}
+  .arch .stat div b{font-family:var(--serif);font-size:30px;color:var(--ember);display:block;line-height:1}
+  .arch .stat div span{font-size:12px;color:var(--muted)}
+  .arch .play{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--cream)}
+  .arch .play i{width:34px;height:34px;border-radius:50%;background:var(--ember);display:inline-flex;align-items:center;justify-content:center;font-style:normal}
+
+  /* real imagery from current BICM CDN */
+  .prog{position:relative;overflow:hidden}
+  .pbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.15;z-index:0;filter:saturate(.85)}
+  .prog>div{position:relative;z-index:1}
+  .up .thumb img.realimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .up .thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(10,13,22,.82));z-index:0}
+  .up .thumb span{position:relative;z-index:1}
+  .archphoto{width:100%;height:210px;object-fit:cover;border-radius:14px;display:block}
+
+  /* partners */
+  .parts{background:var(--cream);color:var(--ink)}
+  .parts .kicker{color:var(--teal)}
+  .ptier{margin-top:26px}
+  .ptier h4{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8a8372;margin-bottom:14px;font-family:var(--sans);font-weight:600}
+  .logos{display:flex;flex-wrap:wrap;gap:12px 14px;align-items:center}
+  .logos img{height:34px;width:auto;object-fit:contain;filter:saturate(.1) contrast(.9);opacity:.85}
+  .logos.big img{height:48px}
+  .chiplogo{border:1px solid var(--lined);border-radius:8px;padding:9px 14px;font-size:13px;color:#4a463c;letter-spacing:.02em}
+
+  /* footer */
+  footer{background:var(--ink);padding:56px 0 40px;border-top:1px solid var(--line)}
+  .fgrid{display:grid;grid-template-columns:1fr;gap:28px}
+  footer .brand{font-size:26px;margin-bottom:10px;display:block}
+  footer p{font-size:13.5px;color:var(--muted);line-height:1.7}
+  footer a.cta{margin-top:6px}
+  .fmeta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:30px;border-top:1px solid var(--line);padding-top:20px}
+  .note{background:var(--ember);color:#fff;text-align:center;font-size:12px;letter-spacing:.03em;padding:9px 16px}
+
+  @media(min-width:760px){
+    nav.links{display:flex}
+    .burger{display:none}
+    .progs{grid-template-columns:1fr 1fr}
+    .nums{grid-template-columns:repeat(4,1fr)}
+    .ups{grid-template-columns:repeat(3,1fr)}
+    .fgrid{grid-template-columns:1.4fr 1fr 1fr}
+    .arch{grid-template-columns:1fr auto;align-items:center}
+  }
+</style>
+</head>
+<body>
+<div class="note" data-en="Concept redesign · unofficial · built by SO! for BICM 2026 pitch — real content, demo layout" data-th="คอนเซ็ปต์รีดีไซน์ · ไม่เป็นทางการ · SO! ทำเพื่อเสนอ BICM 2026 — เนื้อหาจริง เลย์เอาต์เดโม">Concept redesign · unofficial · built by SO! for BICM 2026 pitch</div>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top">BI<b>C</b>M</a>
+    <nav class="links">
+      <a href="#about" data-en="About" data-th="เกี่ยวกับ">About</a>
+      <a href="#programs" data-en="Programs" data-th="โปรแกรม">Programs</a>
+      <a href="#updates" data-en="Updates" data-th="ข่าวสาร">Updates</a>
+      <a href="#archive" data-en="Archive" data-th="ย้อนหลัง">Archive</a>
+      <a href="#partners" data-en="Partners" data-th="พันธมิตร">Partners</a>
+    </nav>
+    <div class="tools">
+      <div class="lang">
+        <button id="en" class="on" onclick="setLang('en')">EN</button>
+        <button id="th" onclick="setLang('th')">TH</button>
+      </div>
+      <a class="cta" href="#" data-en="Register" data-th="ลงทะเบียน">Register</a>
+      <button class="burger" onclick="toggleMenu()" aria-label="menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobnav" id="mobnav">
+    <a href="#about" onclick="toggleMenu()" data-en="About" data-th="เกี่ยวกับ">About</a>
+    <a href="#programs" onclick="toggleMenu()" data-en="Programs" data-th="โปรแกรม">Programs</a>
+    <a href="#updates" onclick="toggleMenu()" data-en="Updates" data-th="ข่าวสาร">Updates</a>
+    <a href="#archive" onclick="toggleMenu()" data-en="Archive" data-th="ย้อนหลัง">Archive</a>
+    <a href="#partners" onclick="toggleMenu()" data-en="Partners" data-th="พันธมิตร">Partners</a>
+  </div>
+</header>
+
+<a id="top"></a>
+<section class="hero">
+  <video class="herovid" autoplay muted loop playsinline poster="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/pitching_hero.webp"><source src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/video/D1_45.webm" type="video/webm"></video>
+  <div class="wrap">
+    <div class="eyebrow" data-en="Bangkok International Content Market 2026" data-th="ตลาดคอนเทนต์สร้างสรรค์นานาชาติกรุงเทพฯ 2569">Bangkok International Content Market 2026</div>
+    <h1 data-en="Where Asia Connects <span class='em'>Global Storytelling</span>" data-th="ค้นพบคลื่นลูกใหม่ <span class='em'>แห่งการเล่าเรื่องระดับโลก</span>">Where Asia Connects <span class="em">Global Storytelling</span></h1>
+    <p class="lede" data-en="A new meeting ground for the world's content players — a vital bridge to connect, co-produce and invest, in the heart of Asia." data-th="เวทีสำคัญที่เชื่อมนักสร้างสรรค์ ผู้ผลิต นักลงทุน และผู้ซื้อคอนเทนต์จากทั่วโลก สู่โอกาสใหม่ของการร่วมผลิตและการลงทุนใจกลางเอเชีย">A new meeting ground for the world's content players — a vital bridge to connect, co-produce and invest, in the heart of Asia.</p>
+    <div class="meta">
+      <span class="chip"><b>20–22</b> <span data-en="July 2026" data-th="ก.ค. 2569">July 2026</span></span>
+      <span class="chip">QSNCC, <span data-en="Bangkok" data-th="กรุงเทพฯ">Bangkok</span></span>
+      <span class="chip" data-en="Pitching · Market · Forum" data-th="Pitching · Market · Forum">Pitching · Market · Forum</span>
+    </div>
+    <div class="herocta">
+      <a class="cta" href="#" data-en="Join BICM 2026" data-th="ร่วมงาน BICM 2026">Join BICM 2026</a>
+      <a class="cta ghost" href="#programs" data-en="Explore the program" data-th="ดูโปรแกรมงาน">Explore the program</a>
+    </div>
+  </div>
+  <div class="scrollhint" data-en="scroll" data-th="เลื่อนลง">scroll</div>
+</section>
+
+<section class="block" id="about">
+  <div class="wrap">
+    <div class="kicker" data-en="The market" data-th="เกี่ยวกับงาน">The market</div>
+    <p class="lead" data-en="The premier marketplace where creative visions meet <span class='accent'>global opportunity</span> — film, series and animation, chosen to scale worldwide." data-th="ตลาดซื้อขายคอนเทนต์ที่ไอเดียสร้างสรรค์ได้พบ <span class='accent'>โอกาสระดับโลก</span> — ภาพยนตร์ ซีรีส์ และแอนิเมชัน ที่พร้อมต่อยอดสู่สากล">The premier marketplace where creative visions meet <span class="accent">global opportunity</span> — film, series and animation, chosen to scale worldwide.</p>
+  </div>
+</section>
+
+<section class="block" id="programs">
+  <div class="wrap">
+    <div class="kicker" data-en="What happens" data-th="สิ่งที่เกิดขึ้น">What happens</div>
+    <div class="progs">
+      <div class="prog">
+        <img class="pbg" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/about_pitching.webp" alt="" onerror="this.remove()">
+        <div class="no">01</div>
+        <div><h3 data-en="Pitching" data-th="การนำเสนอผลงาน">Pitching</h3><p data-en="High-impact pitch sessions. BICM 2026 awards a prize pool over 5 million baht." data-th="เวทีพิตช์ระดับไฮอิมแพกต์ BICM 2026 ชิงรางวัลรวมกว่า 5 ล้านบาท">High-impact pitch sessions. BICM 2026 awards a prize pool over 5 million baht.</p></div>
+        <div class="go" data-en="See pitching →" data-th="ดู Pitching →">See pitching →</div>
+      </div>
+      <div class="prog">
+        <img class="pbg" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/Market_hero.webp" alt="" onerror="this.remove()">
+        <div class="no">02</div>
+        <div><h3 data-en="Content Market" data-th="ตลาดคอนเทนต์">Content Market</h3><p data-en="An expansive market floor showcasing Thailand's leading content companies." data-th="พื้นที่ตลาดที่รวมบริษัทคอนเทนต์ชั้นนำของไทยไว้ในที่เดียว">An expansive market floor showcasing Thailand's leading content companies.</p></div>
+        <div class="go" data-en="See market →" data-th="ดู Market →">See market →</div>
+      </div>
+      <div class="prog">
+        <img class="pbg" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/Seminar_BICM.webp" alt="" onerror="this.remove()">
+        <div class="no">03</div>
+        <div><h3 data-en="Forum" data-th="งานสัมมนา">Forum</h3><p data-en="World-class speakers sharing where the global content industry moves next." data-th="วิทยากรระดับโลกร่วมแชร์ทิศทางอนาคตของอุตสาหกรรมคอนเทนต์">World-class speakers sharing where the global content industry moves next.</p></div>
+        <div class="go" data-en="See forum →" data-th="ดู Forum →">See forum →</div>
+      </div>
+      <div class="prog">
+        <img class="pbg" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/Business_Matching_BICM.webp" alt="" onerror="this.remove()">
+        <div class="no">04</div>
+        <div><h3 data-en="Schedule" data-th="ตารางกิจกรรม">Schedule</h3><p data-en="Three days, one ecosystem for meaningful connections and collaboration." data-th="สามวันเต็มของระบบนิเวศเพื่อการเชื่อมต่อและความร่วมมือที่มีความหมาย">Three days, one ecosystem for meaningful connections and collaboration.</p></div>
+        <div class="go" data-en="See schedule →" data-th="ดูตารางงาน →">See schedule →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block nums-sec">
+  <div class="wrap">
+    <div class="kicker" data-en="Proven ground" data-th="พิสูจน์มาแล้ว">Proven ground</div>
+    <p class="intro" data-en="Built on the Content Project Market 2025." data-th="ต่อยอดจาก Content Project Market 2025">Built on the Content Project Market 2025.</p>
+    <p class="sub" data-en="Under the CEA Content Lab — strengthening Thailand's content industry and expanding its global reach." data-th="ภายใต้ CEA Content Lab — เสริมความแข็งแกร่งอุตสาหกรรมคอนเทนต์ไทยและขยายโอกาสสู่สากล">Under the CEA Content Lab — strengthening Thailand's content industry and expanding its global reach.</p>
+    <div class="nums">
+      <div class="num"><div class="n">54</div><div class="l" data-en="Projects pitched" data-th="โปรเจกต์ที่พิตช์">Projects pitched</div></div>
+      <div class="num"><div class="n">409</div><div class="l" data-en="Business matches" data-th="การจับคู่ธุรกิจ">Business matches</div></div>
+      <div class="num"><div class="n">79</div><div class="l" data-en="Companies & investors" data-th="บริษัทและนักลงทุน">Companies &amp; investors</div></div>
+      <div class="num"><div class="n">16</div><div class="l" data-en="Global experts" data-th="ผู้เชี่ยวชาญระดับโลก">Global experts</div></div>
+    </div>
+    <p class="numfoot" data-en="Networked with <b>Netflix, Viu, GDH, GMMTV</b> and partners across Indonesia, Vietnam and Taiwan." data-th="เชื่อมเครือข่ายกับ <b>Netflix, Viu, GDH, GMMTV</b> และพันธมิตรจากอินโดนีเซีย เวียดนาม และไต้หวัน">Networked with <b>Netflix, Viu, GDH, GMMTV</b> and partners across Indonesia, Vietnam and Taiwan.</p>
+  </div>
+</section>
+
+<section class="block" id="updates">
+  <div class="wrap">
+    <div class="kicker" data-en="Latest updates" data-th="ข่าวสารล่าสุด">Latest updates</div>
+    <div class="ups">
+      <article class="up">
+        <div class="thumb t1"><img class="realimg" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/pitching_hero.webp" alt="" onerror="this.remove()"><span>Pitching</span></div>
+        <div class="body"><div class="date">21 Mar 2026</div><h3 data-en="Applications open — BICM Pitching 2026, prize pool over 5M baht" data-th="เปิดรับสมัครโปรเจกต์แล้ว! เวที BICM Pitching 2026 ชิงรางวัลรวมกว่า 5 ล้านบาท">Applications open — BICM Pitching 2026, prize pool over 5M baht</h3></div>
+      </article>
+      <article class="up">
+        <div class="thumb t2"><img class="realimg" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/Seminar_BICM.webp" alt="" onerror="this.remove()"><span>Forum</span></div>
+        <div class="body"><div class="date">15 Mar 2026</div><h3 data-en="World-class speakers revealed for the BICM Forum" data-th="เผยรายชื่อวิทยากรระดับโลก เตรียมแชร์มุมมองในหน้า BICM Forum">World-class speakers revealed for the BICM Forum</h3></div>
+      </article>
+      <article class="up">
+        <div class="thumb t3"><img class="realimg" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/img/Market_hero.webp" alt="" onerror="this.remove()"><span>Market</span></div>
+        <div class="body"><div class="date">10 Mar 2026</div><h3 data-en="Exhibition map, Hall 1 — first wave of exhibitors announced" data-th="สำรวจแผนที่บูธงาน Hall 1 พร้อมรายชื่อผู้ร่วมงานชุดแรก">Exhibition map, Hall 1 — first wave of exhibitors announced</h3></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="archive">
+  <div class="wrap">
+    <div class="kicker" data-en="Past projects" data-th="โครงการย้อนหลัง">Past projects</div>
+    <p class="lead" data-en="Five years of projects that reached the <span class='accent'>global stage</span>." data-th="ห้าปีของโปรเจกต์ที่ไปถึง <span class='accent'>เวทีระดับโลก</span>">Five years of projects that reached the <span class="accent">global stage</span>.</p>
+    <img class="archphoto" src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/cp2025/cp2025_01.webp" alt="CPM 2025" style="margin-top:20px" onerror="this.remove()">
+    <div class="arch" style="margin-top:16px">
+      <div>
+        <div class="stat">
+          <div><b>2021–25</b><span data-en="archive, by year" data-th="ย้อนหลังรายปี">archive, by year</span></div>
+          <div><b>CPM25</b><span data-en="54 projects featured" data-th="54 โปรเจกต์">54 projects featured</span></div>
+        </div>
+      </div>
+      <a class="play" href="#"><i>▶</i> <span data-en="Watch the CPM 2025 aftermovie" data-th="ดู Aftermovie CPM 2025">Watch the CPM 2025 aftermovie</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="block parts" id="partners">
+  <div class="wrap">
+    <div class="kicker" data-en="Organized by & partners" data-th="จัดโดย & พันธมิตร">Organized by &amp; partners</div>
+    <div class="ptier">
+      <h4 data-en="Organized by" data-th="จัดโดย">Organized by</h4>
+      <div class="logos big">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_cea.webp" alt="CEA" onerror="this.outerHTML='&lt;span class=chiplogo&gt;CEA&lt;/span&gt;'">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_ditp.webp" alt="DITP" onerror="this.outerHTML='&lt;span class=chiplogo&gt;DITP&lt;/span&gt;'">
+      </div>
+    </div>
+    <div class="ptier">
+      <h4 data-en="Strategic & supporting partners" data-th="พันธมิตรเชิงกลยุทธ์และสนับสนุน">Strategic &amp; supporting partners</h4>
+      <div class="logos">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_bec.webp" alt="BEC" onerror="this.outerHTML='&lt;span class=chiplogo&gt;BEC&lt;/span&gt;'">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_one31_01.webp" alt="One31" onerror="this.outerHTML='&lt;span class=chiplogo&gt;One31&lt;/span&gt;'">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_oned_02.webp" alt="OneD" onerror="this.outerHTML='&lt;span class=chiplogo&gt;OneD&lt;/span&gt;'">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_ais.webp" alt="AIS" onerror="this.outerHTML='&lt;span class=chiplogo&gt;AIS&lt;/span&gt;'">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_warner_03.webp" alt="Warner Music" onerror="this.outerHTML='&lt;span class=chiplogo&gt;Warner Music&lt;/span&gt;'">
+        <img src="https://bicm-media.sgp1.cdn.digitaloceanspaces.com/bicm/logo/wl_trueVisionsnow.webp" alt="TrueVisions Now" onerror="this.outerHTML='&lt;span class=chiplogo&gt;TrueVisions&lt;/span&gt;'">
+        <span class="chiplogo">Kantana</span><span class="chiplogo">Mono</span><span class="chiplogo">GMMTV</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap fgrid">
+    <div>
+      <span class="brand">BI<b>C</b>M <span style="font-family:var(--sans);font-size:14px;color:var(--muted)">2026</span></span>
+      <p data-en="Bangkok International Content Market — where Asia connects global storytelling." data-th="ตลาดคอนเทนต์สร้างสรรค์นานาชาติกรุงเทพฯ — ที่ที่เอเชียเชื่อมการเล่าเรื่องสู่ระดับโลก">Bangkok International Content Market — where Asia connects global storytelling.</p>
+      <a class="cta" href="#" data-en="Register" data-th="ลงทะเบียน">Register</a>
+    </div>
+    <div>
+      <h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:12px" data-en="Organized by" data-th="จัดโดย">Organized by</h4>
+      <p data-en="Creative Economy Agency (Public Organization)<br>The Grand Postal Building, 1160 Charoenkrung Rd, Bangrak, Bangkok 10500" data-th="สำนักงานส่งเสริมเศรษฐกิจสร้างสรรค์ (องค์การมหาชน)<br>อาคารไปรษณีย์กลาง 1160 ถ.เจริญกรุง บางรัก กรุงเทพฯ 10500">Creative Economy Agency (Public Organization)<br>The Grand Postal Building, 1160 Charoenkrung Rd, Bangrak, Bangkok 10500</p>
+    </div>
+    <div>
+      <h4 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:12px" data-en="Contact" data-th="ติดต่อ">Contact</h4>
+      <p>Tel (66) 2 105 7400<br>bicm@cea.or.th</p>
+    </div>
+  </div>
+  <div class="wrap fmeta">
+    <span>© 2026 CEA</span><span>Privacy Notice</span><span>Privacy Policy</span><span>Terms of Use</span>
+    <span style="margin-left:auto" data-en="Concept by SO!" data-th="คอนเซ็ปต์โดย SO!">Concept by SO!</span>
+  </div>
+</footer>
+
+<script>
+  function setLang(l){
+    document.body.classList.toggle('th', l==='th');
+    document.documentElement.lang = l;
+    document.getElementById('en').classList.toggle('on', l==='en');
+    document.getElementById('th').classList.toggle('on', l==='th');
+    document.querySelectorAll('[data-en]').forEach(function(el){
+      var v = el.getAttribute('data-'+l);
+      if(v!=null) el.innerHTML = v;
+    });
+  }
+  function toggleMenu(){ document.getElementById('mobnav').classList.toggle('open'); }
+  // shrink the top note on scroll for a cleaner read
+  var note = document.querySelector('.note');
+  window.addEventListener('scroll', function(){
+    note.style.display = window.scrollY > 40 ? 'none' : 'block';
+  }, {passive:true});
+</script>
+</body>
+</html>
